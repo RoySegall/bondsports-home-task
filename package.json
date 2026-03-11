@@ -7,6 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "test:unit": "vitest",
     "playground": "node --import=tsx --watch src/playground.example.ts",
     "drizzle:push": "drizzle-kit push",
     "drizzle:migrate:create": "drizzle-kit generate",
@@ -20,7 +21,7 @@
     "tsx": "^4.21.0",
     "typescript": "~5.9.3",
     "vite": "^7.3.1",
-    "vitest": "^1.5.0"
+    "vitest": "^4.0.18"
   },
   "dependencies": {
     "@libsql/client": "^0.17.0",
