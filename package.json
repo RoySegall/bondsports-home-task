@@ -1,0 +1,30 @@
+{
+  "name": "bond-sports-task",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "playground": "node --import=tsx --watch src/playground.example.ts",
+    "drizzle:push": "drizzle-kit push",
+    "drizzle:migrate:create": "drizzle-kit generate",
+    "drizzle:migrate:apply": "drizzle-kit migrate",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "@types/node": "^25.4.0",
+    "drizzle-kit": "^0.31.9",
+    "tsx": "^4.21.0",
+    "typescript": "~5.9.3",
+    "vite": "^7.3.1",
+    "vitest": "^1.5.0"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.17.0",
+    "dotenv": "^17.3.1",
+    "drizzle-orm": "^0.45.1"
+  }
+}
