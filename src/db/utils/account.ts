@@ -3,22 +3,22 @@ import {db} from "../index.ts";
 import {eq} from "drizzle-orm";
 
 type Person = typeof personsTable.$inferInsert
-type Account = Omit<typeof accountTable.$inferInsert, "id" | "personId"> & { person: Person };
+type Account = typeof accountTable.$inferInsert;
 
 export async function createAccount(account: Account) {
+    if (!account.personId) {
+        throw new Error("Missing person ID");
+    }
+
     const person = await db.select()
         .from(personsTable)
-        .where(eq(personsTable.id, account.person.id))
+        .where(eq(personsTable.id, account.personId))
 
     if (!person.length) {
         throw new Error('No such person');
     }
 
-    const personForAccount = await db.select().from(personsTable).where(eq(personsTable.id, account.person.id));
-
-    if (personForAccount.length) {
-        throw new Error('Cannot create an acocunt for a person with an existing accout');
-    }
+    return db.insert(accountTable).values(account).returning();
 }
 
 export async function depositAccount({}: { account: Account, amount: number }) {

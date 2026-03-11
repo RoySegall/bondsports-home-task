@@ -1,8 +1,9 @@
 import {describe, it, beforeAll, beforeEach, expect} from 'vitest';
 import {db, setTestDb} from "../index.ts";
-import {personsTable, transactionTable,accountTable} from '../schema.ts';
+import {personsTable, transactionTable, accountTable} from '../schema.ts';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import {createAccount} from "./account.ts";
+import {eq} from "drizzle-orm";
 
 describe("Account", () => {
 
@@ -12,14 +13,14 @@ describe("Account", () => {
     });
 
     beforeEach(async () => {
-        // todo: go over all the tables and clean them.
+        // todo: go over all the tables, smarter, and clean them.
         await Promise.all([personsTable, transactionTable,accountTable].map(table => db.delete(table)))
     });
 
     describe("createAccount", () => {
-        it("should not create a new account for a non-existing person", () => {
-            expect(createAccount({
-                person: {id: 1, name: 'John doe', birthDate: new Date().toDateString(), document: ""},
+        it("should not create a new account for a non-existing person", async () => {
+            await expect(createAccount({
+                personId: 100,
                 accountType: 42,
                 balance: 0,
                 activeFlag: true,
@@ -27,8 +28,26 @@ describe("Account", () => {
                 dailyWithdrawalLimit: 1000,
             })).rejects.toThrow('No such person')
         });
-        it("should not create an account for a person with existing account", () => {});
-        it("should create a new account for existing person", () => {});
+        it("should create a new account for existing person", async () => {
+            const [person] = await db.insert(personsTable).values({
+                name: "John doe",
+                document: "1234567890",
+                birthDate: new Date().toDateString(),
+            }).returning({ insertedId: personsTable.id });
+
+            const [createdAccount] = await createAccount({
+                personId: person.insertedId,
+                accountType: 42,
+                balance: 0,
+                activeFlag: true,
+                createdDate: new Date().toDateString(),
+                dailyWithdrawalLimit: 1000,
+            });
+
+            const [accountFromDb] = await db.select().from(accountTable).where(eq(accountTable.id, createdAccount.id));
+            expect(createdAccount.id).toBe(accountFromDb.id)
+        });
+        it("should create multiple accounts for person", () => {});
     });
 
     describe("depositAccount", () => {

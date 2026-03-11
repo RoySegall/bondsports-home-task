@@ -1,17 +1,17 @@
-import {pgTable, text, date, integer, boolean} from "drizzle-orm/pg-core";
+import {pgTable, text, date, integer, boolean, serial} from "drizzle-orm/pg-core";
 import { relations } from 'drizzle-orm';
 
 
 // Tables.
 export const personsTable = pgTable("persons", {
-    id: integer().primaryKey(),
+    id: serial("id").primaryKey(),
     name: text().notNull(),
     document: text(),
     birthDate: date(),
 });
 
 export const accountTable = pgTable("accounts", {
-    id: integer().primaryKey(),
+    id: serial("id").primaryKey(),
     personId: integer(),
     balance: integer(),
     dailyWithdrawalLimit: integer(),
@@ -21,15 +21,15 @@ export const accountTable = pgTable("accounts", {
 });
 
 export const transactionTable = pgTable("transactions", {
-    transactionId: integer().primaryKey(),
-    accountId: integer(),
-    value: integer(),
-    transactionDate: date(),
+    id: serial("id").primaryKey(),
+    accountId: integer().references(() => accountTable.id), // Added FK for safety
+    value: integer().notNull(),
+    transactionDate: date().defaultNow(), // Use defaultNow for easier testing
 });
 
 // Relations.
-export const personRelations = relations(personsTable, ({one}) => ({
-    account: one(accountTable)
+export const personRelations = relations(personsTable, ({many}) => ({
+    account: many(accountTable)
 }));
 
 export const accountRelations = relations(accountTable, ({one, many}) => ({
@@ -40,6 +40,9 @@ export const accountRelations = relations(accountTable, ({one, many}) => ({
     transactions: many(transactionTable)
 }));
 
-export const transactionRelations = relations(transactionTable, ({one}) => ({
-    account: one(accountTable)
+export const transactionRelations = relations(transactionTable, ({ one }) => ({
+    account: one(accountTable, {
+        fields: [transactionTable.accountId],
+        references: [accountTable.id],
+    }),
 }));
