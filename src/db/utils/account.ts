@@ -114,6 +114,8 @@ export async function blockAccount(accountId: Account["id"]) {
     await db.update(accountTable).set({activeFlag: false}).where(eq(accountTable.id, accountId));
 }
 
-export async function getAccountTransactions(account: Account) {
-    console.log(account);
+export async function getAccountTransactions(accountId: Account["id"]) {
+    const account = await getAccount({id: accountId, checkAccountValid: true});
+
+    return account!.transactions;
 }

@@ -8,7 +8,7 @@ import {
     type Account, blockAccount,
     checkBalance,
     depositAccount,
-    getAccount,
+    getAccount, getAccountTransactions,
     getPerson,
     type Person,
     withdrawAccount
@@ -230,8 +230,39 @@ describe("Account", () => {
     });
 
     describe("getAccountTransactions", () => {
-        it("should not show the transactions for non-existing account", () => {});
-        it("should not show the transaction for a blocked account", () => {});
-        it("should show the transactions for existing account", () => {});
+        it("should not show the transactions for non-existing account", () => expect(getAccountTransactions(42)).rejects.toThrow("Account does not exist"));
+        it("should not show the transaction for a blocked account", async () => {
+            const [account] = await createPerson()
+                .then(person => createAccount({personId: person[0].id, activeFlag: false}));
+            await expect(getAccountTransactions(account.id)).rejects.toThrow('Account is blocked')
+        });
+        it("should show the transactions for existing account", async () => {
+            const [[firstAccount], [secondAccount]] = await Promise.all([
+                createPerson()
+                    .then(person => createAccount({personId: person[0].id})),
+                createPerson()
+                    .then(person => createAccount({personId: person[0].id}))
+            ]);
+
+            // Create transactions for accounts.
+            await Promise.all([
+                depositAccount({accountId: firstAccount.id, amount: 20}),
+                depositAccount({accountId: firstAccount.id, amount: 100}),
+                depositAccount({accountId: firstAccount.id, amount: 30}),
+
+                depositAccount({accountId: secondAccount.id, amount: 50}),
+                depositAccount({accountId: secondAccount.id, amount: 50}),
+                depositAccount({accountId: secondAccount.id, amount: 50}),
+                depositAccount({accountId: secondAccount.id, amount: 50}),
+            ]);
+
+            const [firstAccountTransactions, secondAccountTransactions] = await Promise.all([
+                getAccountTransactions(firstAccount.id),
+                getAccountTransactions(secondAccount.id),
+            ]);
+
+            expect(firstAccountTransactions.map(transaction => transaction.value).sort()).toStrictEqual([ 100, 20, 30 ]);
+            expect(secondAccountTransactions.map(transaction => transaction.value).sort()).toStrictEqual([50, 50, 50, 50]);
+        });
     });
 });
