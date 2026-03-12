@@ -2,10 +2,28 @@ import {describe, it, beforeAll, beforeEach, expect} from 'vitest';
 import {db, setTestDb} from "../index.ts";
 import {personsTable, transactionTable, accountTable} from '../schema.ts';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
-import {createAccount} from "./account.ts";
+import * as account from "./account.ts";
 import {eq} from "drizzle-orm";
+import {type Account, depositAccount, getAccount, getPerson, type Person} from "./account.ts";
 
 describe("Account", () => {
+
+    const createAccount = async (payload: Partial<Account> = {}) => account.createAccount({
+        personId: 100,
+        accountType: 42,
+        balance: 0,
+        activeFlag: true,
+        createdDate: new Date().toDateString(),
+        dailyWithdrawalLimit: 1000,
+        ...payload
+    });
+
+    const createPerson = (payload: Partial<Person> = {}) => db.insert(personsTable).values({
+        name: "John doe",
+        document: "1234567890",
+        birthDate: new Date().toDateString(),
+        ...payload
+    }).returning();
 
     beforeAll(async () => {
         setTestDb("postgresql://user:password@localhost:5433/bond_sports_testing");
@@ -18,42 +36,49 @@ describe("Account", () => {
     });
 
     describe("createAccount", () => {
-        it("should not create a new account for a non-existing person", async () => {
-            await expect(createAccount({
-                personId: 100,
-                accountType: 42,
-                balance: 0,
-                activeFlag: true,
-                createdDate: new Date().toDateString(),
-                dailyWithdrawalLimit: 1000,
-            })).rejects.toThrow('No such person')
-        });
+        it("should not create a new account for a non-existing person", async () => expect(createAccount()).rejects.toThrow('No such person'));
+
         it("should create a new account for existing person", async () => {
-            const [person] = await db.insert(personsTable).values({
-                name: "John doe",
-                document: "1234567890",
-                birthDate: new Date().toDateString(),
-            }).returning({ insertedId: personsTable.id });
-
-            const [createdAccount] = await createAccount({
-                personId: person.insertedId,
-                accountType: 42,
-                balance: 0,
-                activeFlag: true,
-                createdDate: new Date().toDateString(),
-                dailyWithdrawalLimit: 1000,
-            });
-
+            const [person] = await createPerson();
+            const [createdAccount] = await createAccount({personId: person.id});
             const [accountFromDb] = await db.select().from(accountTable).where(eq(accountTable.id, createdAccount.id));
+
             expect(createdAccount.id).toBe(accountFromDb.id)
         });
-        it("should create multiple accounts for person", () => {});
+
+        it("should create multiple accounts for person", async () => {
+            const [person] = await createPerson();
+            await Promise.all([
+                createAccount({personId: person.id}),
+                createAccount({personId: person.id}),
+            ]);
+
+            const personFromDB = await getPerson(person.id);
+            expect(personFromDB!.account).toHaveLength(2);
+        });
     });
 
     describe("depositAccount", () => {
-        it("should not deposit to non-existing account", () => {});
-        it("should not deposit to blocked account", () => {});
-        it("should deposit a non-blocked account", () => {});
+        it("should not deposit to non-existing account", () => expect(depositAccount({accountId: 42, amount: 20})).rejects.toThrow('Account does not exist'));
+
+        it("should not deposit to blocked account", async  () => {
+            const [account] = await createPerson()
+                .then(person => createAccount({personId: person[0].id, activeFlag: false}));
+
+            await expect(depositAccount({accountId: account.id, amount: 20})).rejects.toThrow('Account is blocked');
+        });
+
+        it("should deposit a non-blocked account", async () => {
+            const [account] = await createPerson()
+                .then(person => createAccount({personId: person[0].id, balance: 30}));
+
+            await depositAccount({accountId: account.id, amount: 20});
+
+            const accountAfterDeposit = await getAccount(account.id);
+
+            expect(accountAfterDeposit!.balance).toBe(50);
+            expect({accountId: accountAfterDeposit!.transactions[0].accountId, value: accountAfterDeposit!.transactions[0].value}).toStrictEqual({accountId: account.id, value: 20})
+        });
     });
 
     describe("checkBalance", () => {

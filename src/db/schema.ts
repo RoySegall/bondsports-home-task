@@ -22,9 +22,9 @@ export const accountTable = pgTable("accounts", {
 
 export const transactionTable = pgTable("transactions", {
     id: serial("id").primaryKey(),
-    accountId: integer().references(() => accountTable.id), // Added FK for safety
+    accountId: integer().references(() => accountTable.id),
     value: integer().notNull(),
-    transactionDate: date().defaultNow(), // Use defaultNow for easier testing
+    transactionDate: date().defaultNow(),
 });
 
 // Relations.
