@@ -58,10 +58,12 @@ export async function createAccount(account: Account) {
 export async function depositAccount({accountId, amount}: { accountId: number, amount: number }) {
     const account = await getAccount({id: accountId, checkAccountValid: true});
 
-    await Promise.all([
+    const [, [transaction]] = await Promise.all([
         db.update(accountTable).set({ balance: (account!.balance || 0) + amount }).where(eq(accountTable.id, accountId)),
-        db.insert(transactionTable).values({accountId, value: amount}),
+        db.insert(transactionTable).values({accountId, value: amount}).returning(),
     ]);
+
+    return transaction
 }
 
 export async function checkBalance(id: Account["id"]) {
@@ -101,17 +103,17 @@ export async function withdrawAccount({accountId, amount}: { accountId: Account[
         return transaction.value + acc;
     }, 0);
 
-    if (sum >= (account!.dailyWithdrawalLimit || 0)) {
+    if (account!.dailyWithdrawalLimit <= (sum + amount)) {
         throw new Error("Daily withdrawal limit exceeded");
     }
 
-    await depositAccount({accountId: account!.id, amount: amount * -1});
+    return depositAccount({accountId: account!.id, amount: amount * -1});
 }
 
 export async function blockAccount(accountId: Account["id"]) {
     await getAccount({id: accountId, checkAccountValid: true});
 
-    await db.update(accountTable).set({activeFlag: false}).where(eq(accountTable.id, accountId!));
+    return db.update(accountTable).set({activeFlag: false}).where(eq(accountTable.id, accountId!)).returning();
 }
 
 export async function getAccountTransactions(accountId: Account["id"]) {

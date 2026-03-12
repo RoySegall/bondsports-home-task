@@ -39,8 +39,8 @@ async function seed() {
 
     // Create accounts.
     await Promise.all([
-        createAccount({personId: firstPerson.id}),
-        createAccount({personId: secondPerson.id}),
+        createAccount({personId: firstPerson.id, balance: 10_000_000}),
+        createAccount({personId: secondPerson.id, balance: 560}),
         // Pennywise account is blocked, for obvious reasons 🥲
         createAccount({personId: secondPerson.id, activeFlag: true}),
     ]);
