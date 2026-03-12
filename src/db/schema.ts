@@ -1,4 +1,4 @@
-import {pgTable, text, date, integer, boolean, serial} from "drizzle-orm/pg-core";
+import {pgTable, text, date, integer, boolean, serial, timestamp} from "drizzle-orm/pg-core";
 import { relations } from 'drizzle-orm';
 
 
@@ -22,9 +22,9 @@ export const accountTable = pgTable("accounts", {
 
 export const transactionTable = pgTable("transactions", {
     id: serial("id").primaryKey(),
-    accountId: integer().references(() => accountTable.id),
+    accountId: integer().references(() => accountTable.id, {onDelete: "cascade"}),
     value: integer().notNull(),
-    transactionDate: date().defaultNow(),
+    transactionDate: timestamp("transactionDate", { withTimezone: true, mode: 'date' }).defaultNow(),
 });
 
 // Relations.
