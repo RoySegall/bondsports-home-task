@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "test:unit": "vitest",
     "playground": "node --import=tsx --watch src/playground.example.ts",
+    "seed": "node --import=tsx src/db/seed.ts",
     "drizzle:push": "drizzle-kit push",
     "drizzle:migrate:create": "drizzle-kit generate",
     "drizzle:migrate:apply": "drizzle-kit migrate",

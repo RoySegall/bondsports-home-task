@@ -2,36 +2,18 @@ import {describe, it, beforeAll, beforeEach, expect} from 'vitest';
 import {db, setTestDb} from "../index.ts";
 import {personsTable, transactionTable, accountTable} from '../schema.ts';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
-import * as account from "./account.ts";
 import {eq} from "drizzle-orm";
 import {
-    type Account, blockAccount,
+    blockAccount,
     checkBalance,
     depositAccount,
     getAccount, getAccountTransactions,
     getPerson,
-    type Person,
     withdrawAccount
 } from "./account.ts";
+import {createAccount, createPerson} from "../seed.ts";
 
 describe("Account", () => {
-
-    const createAccount = async (payload: Partial<Account> = {}) => account.createAccount({
-        personId: 100,
-        accountType: 42,
-        balance: 0,
-        activeFlag: true,
-        createdDate: new Date().toDateString(),
-        dailyWithdrawalLimit: 1000,
-        ...payload
-    });
-
-    const createPerson = (payload: Partial<Person> = {}) => db.insert(personsTable).values({
-        name: "John doe",
-        document: "1234567890",
-        birthDate: new Date().toDateString(),
-        ...payload
-    }).returning();
 
     beforeAll(async () => {
         setTestDb("postgresql://user:password@localhost:5433/bond_sports_testing");
