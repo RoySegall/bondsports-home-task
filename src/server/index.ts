@@ -20,7 +20,6 @@ export const fastify = Fastify({
 
 await fastify.register(fastifySwagger, swaggerOptions);
 await fastify.register(fastifySwaggerUi, swaggerUi);
-
 fastify.get('/persons', {schema: {tags: ['server']}}, async (_, res) => {
     const persons = await db.query.personsTable.findMany({
         with: {

@@ -1,6 +1,6 @@
 # Bond sports task
 
-This is my solution for the home assignement task from Bond Sport.
+This is my solution for the home assignment task from Bond Sport.
 
 ## Setup
 First, install it:
@@ -40,11 +40,11 @@ pnpm run server:fastify
 
 and interact with it via postman or swagger(maybe, TBD)
 
-### MCP - TBD
-You can run the MCP server and connect it to a local agent lik claude and interact as we should:
+### MCP
+This is a bonus addition! Because this falls outside the primary requirements, I leveraged Claude to help build the MCP 
+server (while the rest of the application is my own original code). The integration should be ready to go, but if it 
+doesn't work out of the box for you, try this:
 
 ```bash
-pnpm run server:mcp
+claude mcp add banking-api -- node --import=tsx src/server/mcp.ts
 ```
-
-Now, add it as a mcp server to you llm and start talking with it.
