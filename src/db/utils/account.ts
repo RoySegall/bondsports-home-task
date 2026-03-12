@@ -7,7 +7,7 @@ export type Account = typeof accountTable.$inferInsert;
 
 export function getPerson(id: Person["id"]) {
     return db.query.personsTable.findFirst({
-        where: (personTable, { eq }) => eq(personTable.id, id),
+        where: (personTable, { eq }) => eq(personTable.id, id!),
         with: {
             // todo: we need to be able to pass true/false to control the eager loading but then we need to create
             //  override type for the function and it's out of scope 😬
@@ -18,7 +18,7 @@ export function getPerson(id: Person["id"]) {
 
 export async function getAccount({id, checkAccountValid = false} :{id: Account["id"], checkAccountValid?: boolean}) {
     const account = await db.query.accountTable.findFirst({
-        where: (accountTable, { eq }) => eq(accountTable.id, id),
+        where: (accountTable, { eq }) => eq(accountTable.id, id!),
         with: {
             // todo: we need to be able to pass true/false to control the eager loading but then we need to create
             //  override type for the function and it's out of scope 😬
@@ -59,7 +59,7 @@ export async function depositAccount({accountId, amount}: { accountId: number, a
     const account = await getAccount({id: accountId, checkAccountValid: true});
 
     await Promise.all([
-        db.update(accountTable).set({ balance: account!.balance + amount }).where(eq(accountTable.id, accountId)),
+        db.update(accountTable).set({ balance: (account!.balance || 0) + amount }).where(eq(accountTable.id, accountId)),
         db.insert(transactionTable).values({accountId, value: amount}),
     ]);
 }
@@ -92,7 +92,7 @@ export async function withdrawAccount({accountId, amount}: { accountId: Account[
 
     const dailyTransactions = await db.select().from(transactionTable)
         .where(and(
-            eq(transactionTable.accountId, accountId),
+            eq(transactionTable.accountId, accountId!),
             gte(transactionTable.transactionDate, startOfDay),
             lte(transactionTable.transactionDate, endOfDay)
         ));
@@ -101,7 +101,7 @@ export async function withdrawAccount({accountId, amount}: { accountId: Account[
         return transaction.value + acc;
     }, 0);
 
-    if (sum >= account.dailyWithdrawalLimit) {
+    if (sum >= (account!.dailyWithdrawalLimit || 0)) {
         throw new Error("Daily withdrawal limit exceeded");
     }
 
@@ -111,7 +111,7 @@ export async function withdrawAccount({accountId, amount}: { accountId: Account[
 export async function blockAccount(accountId: Account["id"]) {
     await getAccount({id: accountId, checkAccountValid: true});
 
-    await db.update(accountTable).set({activeFlag: false}).where(eq(accountTable.id, accountId));
+    await db.update(accountTable).set({activeFlag: false}).where(eq(accountTable.id, accountId!));
 }
 
 export async function getAccountTransactions(accountId: Account["id"]) {
