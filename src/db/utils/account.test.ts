@@ -4,7 +4,7 @@ import {personsTable, transactionTable, accountTable} from '../schema.ts';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import * as account from "./account.ts";
 import {eq} from "drizzle-orm";
-import {type Account, depositAccount, getAccount, getPerson, type Person} from "./account.ts";
+import {type Account, checkBalance, depositAccount, getAccount, getPerson, type Person} from "./account.ts";
 
 describe("Account", () => {
 
@@ -59,9 +59,9 @@ describe("Account", () => {
     });
 
     describe("depositAccount", () => {
-        it("should not deposit to non-existing account", () => expect(depositAccount({accountId: 42, amount: 20})).rejects.toThrow('Account does not exist'));
+        it("should fail for non-existing account", () => expect(depositAccount({accountId: 42, amount: 20})).rejects.toThrow('Account does not exist'));
 
-        it("should not deposit to blocked account", async  () => {
+        it("should fail for blocked account", async  () => {
             const [account] = await createPerson()
                 .then(person => createAccount({personId: person[0].id, activeFlag: false}));
 
@@ -74,7 +74,7 @@ describe("Account", () => {
 
             await depositAccount({accountId: account.id, amount: 20});
 
-            const accountAfterDeposit = await getAccount(account.id);
+            const accountAfterDeposit = await getAccount({id: account.id});
 
             expect(accountAfterDeposit!.balance).toBe(50);
             expect({accountId: accountAfterDeposit!.transactions[0].accountId, value: accountAfterDeposit!.transactions[0].value}).toStrictEqual({accountId: account.id, value: 20})
@@ -82,9 +82,21 @@ describe("Account", () => {
     });
 
     describe("checkBalance", () => {
-        it("should not return balance for non-existing account", () => {});
-        it("should not return balance for blocked account", () => {});
-        it("should return balance for existing account", () => {});
+        it("should fail for non-existing account", () => expect(checkBalance(100)).rejects.toThrow('Account does not exist'));
+
+        it("should fail for blocked account", async () => {
+            const [account] = await createPerson()
+                .then(person => createAccount({personId: person[0].id, activeFlag: false}));
+
+            await expect(checkBalance(account.id)).rejects.toThrow('Account is blocked');
+        });
+
+        it("should return balance for existing account", async () => {
+            const [account] = await createPerson()
+                .then(person => createAccount({personId: person[0].id, balance: 30}));
+
+            await expect(checkBalance(account.id)).resolves.toBe(30);
+        });
     });
 
     describe("withdrawAccount", () => {

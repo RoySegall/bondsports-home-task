@@ -16,8 +16,8 @@ export function getPerson(id: Person["id"]) {
     });
 }
 
-export function getAccount(id: Account["id"]) {
-    return db.query.accountTable.findFirst({
+export async function getAccount({id, checkAccountValid = false} :{id: Account["id"], checkAccountValid?: boolean}) {
+    const account = await db.query.accountTable.findFirst({
         where: (accountTable, { eq }) => eq(accountTable.id, id),
         with: {
             // todo: we need to be able to pass true/false to control the eager loading but then we need to create
@@ -25,8 +25,21 @@ export function getAccount(id: Account["id"]) {
             transactions: true,
         }
     });
-}
 
+    if (!checkAccountValid) {
+        return account;
+    }
+
+    if (!account) {
+        throw new Error('Account does not exist');
+    }
+
+    if (!account.activeFlag) {
+        throw new Error('Account is blocked');
+    }
+
+    return account;
+}
 
 export async function createAccount(account: Account) {
     if (!account.personId) {
@@ -43,15 +56,7 @@ export async function createAccount(account: Account) {
 }
 
 export async function depositAccount({accountId, amount}: { accountId: number, amount: number }) {
-    const account = await getAccount(accountId);
-
-    if (!account) {
-        throw new Error('Account does not exist');
-    }
-
-    if (!account.activeFlag) {
-        throw new Error('Account is blocked');
-    }
+    const account = await getAccount({id: accountId, checkAccountValid: true});
 
     await Promise.all([
         db.update(accountTable).set({ balance: account!.balance + amount }).where(eq(accountTable.id, accountId)),
@@ -59,8 +64,12 @@ export async function depositAccount({accountId, amount}: { accountId: number, a
     ]);
 }
 
-export async function checkBalance(account: Account) {
-    console.log(account);
+export async function checkBalance(id: Account["id"]) {
+    const account = await getAccount({id: id, checkAccountValid: true});
+
+    // todo: should we check the transactions as well? we know for sure that the depositAccount update the balance of
+    //  the account as well so this might be faster (yes... the getAccount eager load but that a tech debt for now).
+    return account!.balance;
 }
 
 export async function withdrawAccount({}: { account: Account, amount: number }) {
