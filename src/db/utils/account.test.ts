@@ -5,7 +5,7 @@ import { migrate } from 'drizzle-orm/node-postgres/migrator';
 import * as account from "./account.ts";
 import {eq} from "drizzle-orm";
 import {
-    type Account,
+    type Account, blockAccount,
     checkBalance,
     depositAccount,
     getAccount,
@@ -205,8 +205,28 @@ describe("Account", () => {
     });
 
     describe("blockAccount", () => {
-        it("should not block a non-existing account", () => {});
-        it("should block an account and not affect other accounts", () => {});
+        it("should not block a non-existing account", () => expect(blockAccount(42)).rejects.toThrow("Account does not exist"));
+        it("should block an account and not affect other accounts", async () => {
+            const [[firstAccount], [secondAccount]] = await Promise.all([
+                createPerson()
+                    .then(person => createAccount({personId: person[0].id})),
+                createPerson()
+                    .then(person => createAccount({personId: person[0].id}))
+            ]);
+
+            // Just verifying.
+            expect(firstAccount).not.toBe(secondAccount.id);
+
+            await blockAccount(firstAccount.id);
+
+            const [firstAccountFromDB, secondAccountFromDB] = await Promise.all([
+                getAccount({id: firstAccount.id}),
+                getAccount({id: secondAccount.id}),
+            ]);
+
+            expect(firstAccountFromDB!.activeFlag).toBe(false);
+            expect(secondAccountFromDB!.activeFlag).toBe(true);
+        });
     });
 
     describe("getAccountTransactions", () => {

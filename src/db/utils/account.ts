@@ -108,8 +108,10 @@ export async function withdrawAccount({accountId, amount}: { accountId: Account[
     await depositAccount({accountId: account!.id, amount: amount * -1});
 }
 
-export async function blockAccount(account: Account) {
-    console.log(account);
+export async function blockAccount(accountId: Account["id"]) {
+    await getAccount({id: accountId, checkAccountValid: true});
+
+    await db.update(accountTable).set({activeFlag: false}).where(eq(accountTable.id, accountId));
 }
 
 export async function getAccountTransactions(account: Account) {
