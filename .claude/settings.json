@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "banking-api": {
+      "command": "node",
+      "args": ["--import=tsx", "src/server/mcp.ts"],
+      "env": { "MCP_TRANSPORT": "stdio" }
+    }
+  }
+}
