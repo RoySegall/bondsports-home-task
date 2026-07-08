@@ -1,5 +1,6 @@
 .card {
   position: relative;
+  height: 100%;
   border-radius: var(--radius);
   overflow: hidden;
   cursor: pointer;
@@ -22,8 +23,8 @@
 
 .thumb {
   position: relative;
-  aspect-ratio: 16 / 9;
   width: 100%;
+  height: 100%;
 }
 
 .badge {
@@ -77,11 +78,11 @@
   }
 }
 
-/* Playback element — letterboxes both portrait (TikTok) and wide (YouTube). */
+/* Playback element — fills the tile, letterboxing portrait (TikTok) or wide (YouTube). */
 .video {
   display: block;
   width: 100%;
-  aspect-ratio: 16 / 9;
+  height: 100%;
   background: #000;
   object-fit: contain;
 }

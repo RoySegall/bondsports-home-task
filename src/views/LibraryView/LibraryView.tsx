@@ -1,19 +1,30 @@
-import { useLayoutEffect, useRef, useState } from 'react'
-import { LayoutGrid, List, FolderX } from 'lucide-react'
-import { useVirtualizer } from '@tanstack/react-virtual'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { FolderX } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { useAppStore } from '../../States/useAppStore'
 import { FileCard } from '../../components/FileCard'
 import { Button } from '../../components/Button'
 import { useImportCsv } from '../../lib/useImportCsv'
-import { classNames } from '../../lib/classNames'
 import styles from './LibraryView.module.css'
 
 const MIN_COLUMN = 220
 const GAP = 12
+const ASPECT = 16 / 9
+const OVERSCAN = 600 // px rendered beyond the viewport, above and below
 
-// Populated library: header + a virtualized, responsive card grid that stays
-// smooth at thousands of entries (only visible rows are mounted).
+interface Tile {
+  index: number
+  path: string
+  left: number
+  top: number
+  width: number
+  height: number
+}
+
+// Populated library: header + a responsive, uniform card grid. Every cell is the
+// same 16:9 size. The layout is a plain grid computed from the measured width, so
+// we can window it — only tiles near the viewport are mounted — and it stays smooth
+// at thousands of entries.
 export function LibraryView() {
   const { filePaths, filteredPaths, searchTerm } = useAppStore(
     useShallow((state) => ({
@@ -24,9 +35,11 @@ export function LibraryView() {
   )
   const importCsv = useImportCsv()
 
-  // Measure the scroll container's content width to derive the column count.
+  // Measure the scroll container (content width for columns, height for windowing).
   const scrollRef = useRef<HTMLDivElement>(null)
   const [width, setWidth] = useState(0)
+  const [viewportHeight, setViewportHeight] = useState(0)
+  const [scrollTop, setScrollTop] = useState(0)
   useLayoutEffect(() => {
     const element = scrollRef.current
     if (!element) {
@@ -36,6 +49,7 @@ export function LibraryView() {
       const style = getComputedStyle(element)
       const padX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight)
       setWidth(element.clientWidth - padX)
+      setViewportHeight(element.clientHeight)
     }
     measure() // synchronous initial measure — don't wait on the observer's first tick
     const observer = new ResizeObserver(measure)
@@ -47,23 +61,52 @@ export function LibraryView() {
     }
   }, [])
 
+  // Throttle scroll updates to one per frame so windowing recomputes cheaply.
+  const frameRef = useRef(0)
+  const onScroll = () => {
+    if (frameRef.current) {
+      return
+    }
+    frameRef.current = requestAnimationFrame(() => {
+      frameRef.current = 0
+      if (scrollRef.current) {
+        setScrollTop(scrollRef.current.scrollTop)
+      }
+    })
+  }
+
   const columnCount = width > 0 ? Math.max(1, Math.floor((width + GAP) / (MIN_COLUMN + GAP))) : 1
   const columnWidth = width > 0 ? (width - (columnCount - 1) * GAP) / columnCount : 0
-  const rowHeight = Math.max(1, (columnWidth * 9) / 16 + GAP)
-  const rowCount = width > 0 ? Math.ceil(filteredPaths.length / columnCount) : 0
 
-  const rowVirtualizer = useVirtualizer({
-    count: rowCount,
-    getScrollElement: () => scrollRef.current,
-    estimateSize: () => rowHeight,
-    overscan: 4,
-  })
+  // Uniform grid: every tile the same 16:9 box, placed by row/column. Deterministic
+  // and O(n), so positions are stable and windowing (below) is cheap.
+  const { tiles, totalHeight } = useMemo(() => {
+    if (columnWidth <= 0) {
+      return { tiles: [] as Tile[], totalHeight: 0 }
+    }
+    const tileHeight = columnWidth / ASPECT
+    const rowStride = tileHeight + GAP
+    const laid = filteredPaths.map((path, index): Tile => {
+      const column = index % columnCount
+      const row = Math.floor(index / columnCount)
+      return {
+        index,
+        path,
+        left: column * (columnWidth + GAP),
+        top: row * rowStride,
+        width: columnWidth,
+        height: tileHeight,
+      }
+    })
+    const rowCount = Math.ceil(filteredPaths.length / columnCount)
+    return { tiles: laid, totalHeight: Math.max(0, rowCount * rowStride - GAP) }
+  }, [filteredPaths, columnCount, columnWidth])
 
-  // The virtualizer caches row positions and won't notice a new estimateSize on
-  // its own; re-measure when rowHeight changes so cards stay aligned on resize.
-  useLayoutEffect(() => {
-    rowVirtualizer.measure()
-  }, [rowHeight, rowVirtualizer])
+  const visible = tiles.filter(
+    (tile) =>
+      tile.top + tile.height > scrollTop - OVERSCAN &&
+      tile.top < scrollTop + viewportHeight + OVERSCAN,
+  )
 
   // Empty state: the imported CSV contained no valid video paths.
   if (filePaths.length === 0) {
@@ -87,49 +130,28 @@ export function LibraryView() {
             {filteredPaths.length.toLocaleString()} of {filePaths.length.toLocaleString()} files
           </p>
         </div>
-        <div className={styles.toggle} role="group" aria-label="View mode">
-          <button
-            type="button"
-            className={classNames(styles.iconButton, styles.active)}
-            aria-label="Grid view"
-            aria-pressed
-          >
-            <LayoutGrid size={18} aria-hidden />
-          </button>
-          <button type="button" className={styles.iconButton} aria-label="List view" disabled>
-            <List size={18} aria-hidden />
-          </button>
-        </div>
       </div>
 
-      <div ref={scrollRef} className={styles.scroll}>
+      <div ref={scrollRef} className={styles.scroll} onScroll={onScroll}>
         {filteredPaths.length === 0 ? (
           <p className={styles.noResults}>No files match “{searchTerm}”.</p>
         ) : (
-          <div className={styles.sizer} style={{ height: rowVirtualizer.getTotalSize() }}>
-            {rowVirtualizer.getVirtualItems().map((virtualRow) => {
-              const start = virtualRow.index * columnCount
-              const rowItems = filteredPaths.slice(start, start + columnCount)
-              return (
-                <div
-                  key={virtualRow.key}
-                  className={styles.row}
-                  style={{
-                    height: rowHeight - GAP,
-                    transform: `translateY(${virtualRow.start}px)`,
-                    gridTemplateColumns: `repeat(${columnCount}, minmax(0, 1fr))`,
-                  }}
-                >
-                  {rowItems.map((path, columnIndex) => (
-                    // Identify each cell by absolute position, not path: the same file
-                    // may appear many times. This drives both React's key (so duplicate
-                    // siblings don't corrupt reconciliation) and play state (so only the
-                    // clicked card plays, not every card sharing that path).
-                    <FileCard key={start + columnIndex} index={start + columnIndex} path={path} />
-                  ))}
-                </div>
-              )
-            })}
+          <div className={styles.sizer} style={{ height: totalHeight }}>
+            {visible.map((tile) => (
+              // Key by absolute position, not path: the same file may appear many
+              // times, and duplicate sibling keys corrupt reconciliation.
+              <div
+                key={tile.index}
+                className={styles.tile}
+                style={{
+                  transform: `translate(${tile.left}px, ${tile.top}px)`,
+                  width: tile.width,
+                  height: tile.height,
+                }}
+              >
+                <FileCard index={tile.index} path={tile.path} />
+              </div>
+            ))}
           </div>
         )}
       </div>
