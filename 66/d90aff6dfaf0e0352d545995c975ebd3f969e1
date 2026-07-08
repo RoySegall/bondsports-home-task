@@ -1,0 +1,14 @@
+src/views/LibraryView/LibraryView.tsx
+  h_2e28e21a82d10a 112,136
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "66d90aff6dfaf0e0352d545995c975ebd3f969e1",
+  "prompts": {},
+  "humans": {
+    "h_2e28e21a82d10a": {
+      "author": "Roy Segall <roy@segall.io>"
+    }
+  }
+}
