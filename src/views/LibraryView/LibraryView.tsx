@@ -109,7 +109,7 @@ export function LibraryView() {
   )
 
   // Empty state: the imported CSV contained no valid video paths.
-  if (filePaths.length === 0) {
+  if (!filePaths.length) {
     return (
       <div className={styles.emptyResult}>
         <FolderX size={40} strokeWidth={1.5} aria-hidden />
@@ -133,7 +133,7 @@ export function LibraryView() {
       </div>
 
       <div ref={scrollRef} className={styles.scroll} onScroll={onScroll}>
-        {filteredPaths.length === 0 ? (
+        {!filteredPaths.length ? (
           <p className={styles.noResults}>No files match “{searchTerm}”.</p>
         ) : (
           <div className={styles.sizer} style={{ height: totalHeight }}>
