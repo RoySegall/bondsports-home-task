@@ -1,0 +1,30 @@
+electron/mock/metadata.ts
+  s_0b7ba546d32d1f::t_41ed737d93fc73 1,13-15,20-23,29
+src/components/FileCard/FileCard.module.css
+  s_0b7ba546d32d1f::t_57aeabd412b5f8 3
+  s_0b7ba546d32d1f::t_641458b0a4e8e3 27
+  s_0b7ba546d32d1f::t_c355664183ce04 81,85
+src/views/LibraryView/LibraryView.module.css
+  s_0b7ba546d32d1f::t_a3570195d0e5df 44-45
+src/views/LibraryView/LibraryView.tsx
+  s_0b7ba546d32d1f::t_5c126c12eb7ae4 1,13,15-23,38,41-42,52,64-76,83-86,89,100,105-109,135,139-154
+  s_0b7ba546d32d1f::t_36ceecf8b4f74c 99
+  s_0b7ba546d32d1f::t_8d03c3dfc58b34 2,12,24-27,81-82,87-88,90-98,101-103
+  s_0b7ba546d32d1f::t_19ecc2e92ff7ac 77
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "884e3cbeca5783b4196c1baccbed94b4b4deeac3",
+  "prompts": {},
+  "sessions": {
+    "s_0b7ba546d32d1f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "964fe502-5d82-4c3c-a5fa-e1342eaf91a6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Roy Segall <roy@segall.io>"
+    }
+  }
+}
