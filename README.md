@@ -19,7 +19,7 @@ pnpm install
 As always:
 
 ```bash
-npm run dev
+npm run start
 ```
 
 ## Interacting with the app

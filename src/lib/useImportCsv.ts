@@ -5,8 +5,8 @@ import { parseCsvPaths } from './csv'
 import { LIBRARY_KEY } from './useLibrary'
 
 // Import as a mutation: pick a CSV over IPC, then drop the parsed video paths into
-// the React Query cache. RQ is the data layer — the list waterfalls from there into
-// the store (see useLibraryWaterfall). Exposes isPending/isError to the button.
+// the React Query cache — RQ is the data layer, and components read the list back
+// from it via useLibrary. Exposes isPending/isError to the button.
 export function useImportCsv() {
   const queryClient = useQueryClient()
 
