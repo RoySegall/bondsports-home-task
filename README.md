@@ -1,30 +1,38 @@
-# React + TypeScript + Vite
+# Overwolf home assignment
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+This is my solution to the Overwolf home assignment.
 
-Currently, two official plugins are available:
+## Setup
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
-
-- Configure the top-level `parserOptions` property like this:
-
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
+You can do:
+```bash
+npm install
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+But because you probably have a lot of tasks to check, you might want to do:
+
+```bash
+pnpm install
+```
+
+## Running
+As always:
+
+```bash
+npm run dev
+```
+
+## Interacting with the app
+In the app we have several videos I took from the internet. They are located in the `videos` folder. They are small,
+pretty small, so... no worries :)
+
+The app requires a CSV file so you can create it via:
+
+```bash
+npm run generate:csv
+```
+
+In there you'll be asked how many files you want in the csv, how many non-video files and how many non-existing files.
+All file paths will be adjusted to the current running machine, so no need to worry about that.
+
+Then the file will be in `sample-files.csv` - it's untracked, so don't worry about committing it :)
