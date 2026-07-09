@@ -13,9 +13,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run lint` — ESLint over `.ts`/`.tsx`, `--max-warnings 0` (any warning fails).
 - `npm run preview` — serve the built renderer without Electron.
 
-There is **no test runner** configured (no test script, no test dependencies). Don't assume `npm test` exists; if adding tests, wire up the framework first.
+Tests run with **Vitest** — `npm test` (once) or `npm run test:watch`. Tests live beside their subject as `*.test.ts` / `*.test.tsx`; pure logic and store/`useLibrary` tests run in Node, the one router test opts into jsdom.
 
-This directory is **not a git repository** — `git init` before expecting version-control operations to work.
+This **is** a git repository.
 
 ## Architecture: three Electron contexts, one Vite build
 

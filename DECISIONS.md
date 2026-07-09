@@ -10,10 +10,22 @@ I went with CSS and pure CSS:
 
 
 ## 3rd party libraries
-1. Tanstack Query - TSQ is the data layer; it handles the mutation and stores the data from it, thus being a single source of truth.
-2. Tanstack Virtual - used for not rendering all rows at once (though the best approach here is to use pagination). We need to handle 5,000+ files, and mounting a video cell for each would freeze the DOM - so only the rows in the viewport are mounted, and they recycle as you scroll. The DOM stays small no matter how big the list.
-3. Zustand - small state management to manage the component "pyrotechnic" - which page to show. A lot of people would
-   say "use hooks, they're good enough" but they're good, IMO, for a simple component. Not for global data we need to pass to other components (context, or a custom hook, but I)
+1. Tanstack Query - TSQ is the data layer; it handles the mutation and stores the data from it, thus being a single 
+   source of truth.
+2. Tanstack Virtual - used for not rendering all rows at once (though the best approach here is to use pagination - but 
+   the task is to browse a local CSV with no backend to page against, so windowing a flat list gives the same DOM savings). 
+   We need to handle 5,000+ files, and mounting a video cell for each would freeze the DOM - so only the rows in the 
+   viewport are mounted, and they recycle as you scroll. The DOM stays small no matter how big the list.
+3. Zustand - small state management to manage the component "pyrotechnic" - which video is playing etc. etc. A lot of people would
+   say "use hooks, they're good enough" but they're good, IMO, for a simple component. Not for global data we need to 
+   pass to other components (context, or a custom hook, but I find both get boilerplate-y as the app grows - and context 
+   re-renders every consumer - so a small store is cleaner).
+
+Full disclosure - at scale I'd reach for MobX. `computed` + fine-grained reactivity kill the derive-with-hooks trap 
+(no selectors, no `useShallow` dance - derivations just recompute when their inputs change). I went Zustand for a 
+take-home because "1KB, no magic, readable in 30 seconds" beats "elegant, but you have to trust the observer". 
+The community picked explicit-and-small over elegant-and-magic - alignment with React's grain, not merit - and for 
+something a reviewer reads fast, that's the safe side to be on.
 
 ### More on my state approach
 By having the data in the TSQ layer we can keep the state purely for handling the data. If we look at how we had state before:
@@ -22,6 +34,15 @@ and in our unit tests we need to cover that - loading state, error, reject and m
 
 Tanstack Query took this headache from us, and now our data sits there - cached, invalidated in smart ways, battle tested and more - so that means our state is purely logical. If we want to unit test it, we can just pass data to the function. No need to mock network requests.
 And that's why TSQ only needs to hold the data, and this will drill down to the components and state - like water flowing down the river and branching out.
+
+## Playing video without real files - the vault:// protocol
+The renderer can't load `file://` (Electron blocks it, plus CORS). So the main process registers a custom `vault://` scheme: it pulls the path out of the URL and streams that real file off disk - with HTTP Range support so the player can seek - falling back to a small bundled dummy clip for paths that don't exist. Either way each cell gets a real, playable `<video>` with no `file://`.
+
+## Per-cell fetching
+Metadata is fetched with one React Query per cell (keyed by the path), not one big request. That's what gives us loading / error / retry per cell - a single failed lookup shows a retry button on that one card instead of blanking the whole grid. The mock fails ~10% of the time on purpose to exercise it.
+
+## The mock API is per-path, not batch
+The brief describes "send an array, get a list back". I went per-path (`getFileMetadata(path)`) on purpose - it's what makes the per-cell states above possible. A batch call would collapse everything into one shared loading/error state for the whole page.
 
 ## Testing: invest in logic and state, treat rendering as a smoke check
 
