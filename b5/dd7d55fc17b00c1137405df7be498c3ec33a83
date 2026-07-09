@@ -1,0 +1,29 @@
+DECISIONS.md
+  s_0b7ba546d32d1f::t_f373a8e6e5e56a 14
+  h_2e28e21a82d10a 6,10-11,15,17-18
+  s_0b7ba546d32d1f::t_b389e603bf5622 8-9,12-13,19-23,25,30-38,48
+  s_0b7ba546d32d1f::t_b5a42103030162 24
+  s_0b7ba546d32d1f::t_d97d022983e7fa 7
+  s_0b7ba546d32d1f::t_d926a555728f92 16
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "b5dd7d55fc17b00c1137405df7be498c3ec33a83",
+  "prompts": {},
+  "humans": {
+    "h_2e28e21a82d10a": {
+      "author": "Roy Segall <roy@segall.io>"
+    }
+  },
+  "sessions": {
+    "s_0b7ba546d32d1f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "964fe502-5d82-4c3c-a5fa-e1342eaf91a6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Roy Segall <roy@segall.io>"
+    }
+  }
+}
