@@ -1,0 +1,578 @@
+<title>File Vault &mdash; Decision Record</title>
+<style>
+  :root {
+    color-scheme: dark;
+    /* Obsidian Utility - warm charcoal, the app red, a teal data-tone */
+    --bg: #121110;
+    --bg-2: #171512;
+    --surface: #1b1917;
+    --raised: #211e1a;
+    --line: #302b26;
+    --line-2: #3c352e;
+    --text: #f3efe9;
+    --muted: #a89d91;
+    --faint: #746a5f;
+    --red: #ff4433;
+    --red-dim: #cd3a2c;
+    --red-soft: rgba(255, 68, 51, 0.12);
+    --cyan: #52cfc3;
+    --cyan-dim: #2f9c92;
+    --cyan-soft: rgba(82, 207, 195, 0.12);
+    --gold: #e2b25c;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --measure: 64ch;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+    background:
+      radial-gradient(120% 80% at 78% -10%, rgba(255, 68, 51, 0.10), transparent 55%),
+      radial-gradient(90% 70% at 8% 4%, rgba(82, 207, 195, 0.07), transparent 55%);
+  }
+
+  .wrap { position: relative; z-index: 1; max-width: 1060px; margin: 0 auto; padding: 0 clamp(20px, 5vw, 44px); }
+
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 3px; }
+
+  /* type */
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--faint);
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .eyebrow::before { content: ""; width: 22px; height: 1px; background: var(--line-2); }
+  .eyebrow.accent { color: var(--red); }
+  .eyebrow.accent::before { background: var(--red); }
+  .eyebrow.data { color: var(--cyan); }
+  .eyebrow.data::before { background: var(--cyan); }
+
+  h1, h2, h3 { text-wrap: balance; margin: 0; font-weight: 700; letter-spacing: -0.02em; line-height: 1.05; }
+  h2 { font-size: clamp(28px, 4.2vw, 44px); }
+  h3 { font-size: 20px; letter-spacing: -0.01em; }
+  p { margin: 0; max-width: var(--measure); }
+  .lead { font-size: clamp(18px, 2.2vw, 22px); line-height: 1.5; color: var(--muted); }
+  code, .m { font-family: var(--mono); font-size: 0.88em; }
+  code { color: var(--cyan); background: var(--cyan-soft); padding: 0.1em 0.4em; border-radius: 4px; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* hero */
+  header.hero { padding: clamp(64px, 13vh, 130px) 0 40px; }
+  .hero h1 { font-size: clamp(46px, 10vw, 104px); margin: 22px 0 26px; line-height: 0.94; }
+  .hero h1 .stroke { color: var(--red); }
+  .hero .lead { max-width: 40ch; }
+  .scrollcue { margin-top: 54px; font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; color: var(--faint); text-transform: uppercase; display: flex; align-items: center; gap: 12px; }
+  .scrollcue .rule { flex: 1; height: 1px; background: linear-gradient(90deg, var(--line-2), transparent); max-width: 220px; }
+
+  /* stat band */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; margin: 44px 0 8px; }
+  .stat { background: var(--surface); padding: 22px 24px; }
+  .stat .v { font-family: var(--mono); font-size: clamp(24px, 3.4vw, 34px); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; color: var(--text); }
+  .stat:nth-child(1) .v { color: var(--red); }
+  .stat:nth-child(2) .v { color: var(--cyan); }
+  .stat .k { font-size: 13px; color: var(--muted); margin-top: 6px; line-height: 1.35; }
+
+  /* sections */
+  section { padding: clamp(60px, 11vh, 120px) 0; border-top: 1px solid var(--line); }
+  .sec-head { display: flex; flex-direction: column; gap: 16px; margin-bottom: 40px; max-width: 58ch; }
+  .sec-head .body { color: var(--muted); font-size: 18px; }
+
+  .reveal { opacity: 0; transform: translateY(16px); transition: opacity .7s ease, transform .7s cubic-bezier(.2,.7,.2,1); }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* panels */
+  .panel { background: linear-gradient(180deg, var(--raised), var(--surface)); border: 1px solid var(--line); border-radius: 16px; padding: clamp(18px, 3vw, 30px); }
+  .panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; margin-bottom: 18px; flex-wrap: wrap; }
+  .panel-title { font-family: var(--mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+
+  /* architecture flow */
+  .flowwrap { position: relative; }
+  .flow-readout { display: flex; gap: 26px; flex-wrap: wrap; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  .flow-readout .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 8px; vertical-align: middle; }
+  svg.flow { width: 100%; height: auto; display: block; }
+  .node-box { fill: var(--surface); stroke: var(--line-2); }
+  .node-box.rq { stroke: var(--cyan-dim); }
+  .node-box.zu { stroke: var(--red-dim); }
+  .node-label { fill: var(--text); font-family: var(--mono); font-weight: 600; letter-spacing: 0.04em; }
+  .node-sub { fill: var(--faint); font-family: var(--mono); }
+  .leaf-box { fill: var(--bg-2); stroke: var(--line-2); }
+  .leaf-label { fill: var(--muted); font-family: var(--mono); letter-spacing: 0.06em; }
+  .flow-path { fill: none; stroke-width: 1.4; opacity: 0.5; }
+  .flow-path.rq { stroke: var(--cyan-dim); }
+  .flow-path.zu { stroke: var(--red-dim); }
+
+  .aside { margin-top: 26px; border-left: 2px solid var(--red); padding: 4px 0 4px 22px; color: var(--text); font-size: 18px; max-width: 56ch; }
+  .aside .who { display: block; margin-top: 10px; font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--faint); }
+
+  /* virtualization */
+  .virt { display: grid; grid-template-columns: 300px 1fr; gap: 28px; align-items: stretch; }
+  .virt-strip { position: relative; height: 340px; overflow-y: auto; background: var(--bg-2); border: 1px solid var(--line); border-radius: 12px; scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
+  .virt-strip::-webkit-scrollbar { width: 10px; }
+  .virt-strip::-webkit-scrollbar-thumb { background: var(--line-2); border-radius: 6px; }
+  .virt-spacer { position: relative; width: 100%; }
+  .vrow { position: absolute; left: 0; right: 0; display: flex; align-items: center; gap: 10px; padding: 0 12px; font-family: var(--mono); font-size: 11px; color: var(--muted); border-bottom: 1px solid rgba(255,255,255,0.03); }
+  .vrow .bar { height: 8px; border-radius: 3px; background: linear-gradient(90deg, var(--cyan-dim), transparent); flex: 1; opacity: 0.6; }
+  .vrow .idx { width: 46px; color: var(--faint); font-variant-numeric: tabular-nums; }
+  .virt-side { display: flex; flex-direction: column; justify-content: center; gap: 22px; }
+  .bigstat { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .bigstat b { display: block; font-size: clamp(34px, 6vw, 52px); font-weight: 600; letter-spacing: -0.02em; }
+  .bigstat b .of { color: var(--faint); }
+  .bigstat span { font-size: 13px; color: var(--muted); letter-spacing: 0.04em; }
+  .mounted b { color: var(--cyan); }
+  .virt-note { color: var(--muted); font-size: 15px; }
+
+  /* testing ladder */
+  .ladder { display: flex; flex-direction: column; gap: 16px; }
+  .rung { display: grid; grid-template-columns: 190px 1fr 54px; gap: 16px; align-items: center; }
+  .rung .lab { font-family: var(--mono); font-size: 12px; letter-spacing: 0.04em; color: var(--text); }
+  .rung .lab small { display: block; color: var(--faint); letter-spacing: 0; font-size: 11px; margin-top: 3px; }
+  .track { height: 12px; background: var(--bg-2); border-radius: 7px; overflow: hidden; border: 1px solid var(--line); }
+  .fill { height: 100%; width: 0; border-radius: 7px; transition: width 1.1s cubic-bezier(.2,.8,.2,1); }
+  .fill.hi { background: linear-gradient(90deg, var(--cyan-dim), var(--cyan)); }
+  .fill.lo { background: repeating-linear-gradient(45deg, var(--faint), var(--faint) 5px, #5a5249 5px, #5a5249 10px); }
+  .fill.e2e { background: linear-gradient(90deg, var(--red-dim), var(--red)); }
+  .rung .val { font-family: var(--mono); font-variant-numeric: tabular-nums; text-align: right; color: var(--muted); font-size: 13px; }
+
+  /* timeline */
+  .tl { position: relative; padding: 40px 0 8px; }
+  .tl-axis { position: relative; height: 2px; background: var(--line-2); border-radius: 2px; margin: 0 8px; }
+  .tl-years { display: flex; justify-content: space-between; margin: 12px 10px 0; font-family: var(--mono); font-size: 11px; color: var(--faint); font-variant-numeric: tabular-nums; }
+  .tl-node { position: absolute; top: 50%; transform: translate(-50%, -50%); }
+  .tl-dot { width: 13px; height: 13px; border-radius: 50%; background: var(--surface); border: 2px solid var(--line-2); cursor: help; transition: transform .2s ease, border-color .2s ease; }
+  .tl-node:hover .tl-dot, .tl-node:focus-visible .tl-dot { transform: scale(1.35); }
+  .tl-node[data-tone="live"] .tl-dot { border-color: var(--red); box-shadow: 0 0 0 4px var(--red-soft); }
+  .tl-node[data-tone="dead"] .tl-dot { border-color: var(--faint); background: var(--bg); }
+  .tl-node[data-tone="good"] .tl-dot { border-color: var(--cyan); box-shadow: 0 0 0 4px var(--cyan-soft); }
+  .tl-name { position: absolute; left: 50%; transform: translateX(-50%); white-space: nowrap; font-family: var(--mono); font-size: 11px; letter-spacing: 0.04em; color: var(--muted); }
+  .tl-node.up .tl-name { bottom: 22px; }
+  .tl-node.down .tl-name { top: 22px; }
+  .tl-node[data-tone="dead"] .tl-name { color: var(--faint); text-decoration: line-through; text-decoration-color: var(--red-dim); }
+  .tl-tip { position: absolute; left: 50%; transform: translateX(-50%) translateY(6px); bottom: 40px; width: 210px; padding: 10px 12px; background: var(--raised); border: 1px solid var(--line-2); border-radius: 9px; font-size: 12.5px; line-height: 1.4; color: var(--muted); opacity: 0; pointer-events: none; transition: opacity .18s ease, transform .18s ease; z-index: 5; }
+  .tl-node.down .tl-tip { bottom: auto; top: 40px; }
+  .tl-node:hover .tl-tip, .tl-node:focus-visible .tl-tip { opacity: 1; transform: translateX(-50%) translateY(0); }
+  .tl-tip b { color: var(--text); }
+
+  /* decision cards */
+  .cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 24px; display: flex; flex-direction: column; gap: 12px; transition: border-color .25s ease, transform .25s ease; }
+  .card:hover { border-color: var(--line-2); transform: translateY(-2px); }
+  .card .kicker { font-family: var(--mono); font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; color: var(--faint); }
+  .card p { color: var(--muted); font-size: 15px; }
+  .card p code { font-size: 0.82em; }
+  .miniflow { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 11px; color: var(--muted); flex-wrap: wrap; }
+  .miniflow .chip { border: 1px solid var(--line-2); border-radius: 6px; padding: 4px 8px; background: var(--bg-2); }
+  .miniflow .arr { color: var(--cyan); }
+  .dotgrid { display: grid; grid-template-columns: repeat(20, 1fr); gap: 4px; }
+  .dotgrid i { aspect-ratio: 1; border-radius: 2px; background: var(--cyan-dim); opacity: 0.55; }
+  .dotgrid i.err { background: var(--red); opacity: 1; }
+
+  /* footer */
+  footer { border-top: 1px solid var(--line); padding: 46px 0 70px; color: var(--faint); }
+  footer .row { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; align-items: baseline; }
+  footer .brand { font-family: var(--mono); letter-spacing: 0.12em; text-transform: uppercase; font-size: 12px; color: var(--muted); }
+  footer .fine { font-size: 12.5px; max-width: 42ch; }
+
+  @media (max-width: 720px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+    .virt { grid-template-columns: 1fr; }
+    .cards { grid-template-columns: 1fr; }
+    .rung { grid-template-columns: 130px 1fr 44px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .fill { transition: none; }
+    * { scroll-behavior: auto; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="hero">
+    <span class="eyebrow">File Vault &middot; Decision Record</span>
+    <h1>Decisions,<br>not <span class="stroke">defaults</span>.</h1>
+    <p class="lead">The reasoning behind File Vault &mdash; a 5,000-file video library on Electron. Not what got built; <em>why</em>. Six calls, each paying a trade-off out loud.</p>
+
+    <div class="stats reveal">
+      <div class="stat"><div class="v num">1 KB</div><div class="k">Zustand &mdash; the whole store</div></div>
+      <div class="stat"><div class="v num">8 / 5,000</div><div class="k">rows ever in the DOM</div></div>
+      <div class="stat"><div class="v num">~10%</div><div class="k">mock failures, on purpose</div></div>
+      <div class="stat"><div class="v num">0</div><div class="k">network mocks in the tests</div></div>
+    </div>
+
+    <div class="scrollcue"><span>Scroll</span><span class="rule"></span></div>
+  </header>
+
+  <!-- STATE -->
+  <section>
+    <div class="sec-head reveal">
+      <span class="eyebrow data">State</span>
+      <h2>Two springs, not one store.</h2>
+      <p class="body">React Query owns everything that came from the backend &mdash; it's the data layer and the single source of truth. Zustand holds only what's ephemeral: the search term and which cell is playing. Components read the data straight from the query (filtered in <code>select</code>); the store never gets a copy. Two independent sources, flowing down and branching out &mdash; like water down a river.</p>
+    </div>
+
+    <div class="panel flowwrap reveal">
+      <div class="panel-head">
+        <span class="panel-title">Data flow</span>
+        <div class="flow-readout">
+          <span><span class="dot" style="background:var(--cyan)"></span>React Query &middot; data</span>
+          <span><span class="dot" style="background:var(--red)"></span>Zustand &middot; UI state</span>
+        </div>
+      </div>
+      <svg class="flow" viewBox="0 0 820 470" role="img" aria-label="Architecture flow: React Query and Zustand branching down to components">
+        <g id="flow-paths" stroke-linecap="round">
+          <path class="flow-path rq" d="M410 128 C410 250 115 320 115 402"></path>
+          <path class="flow-path rq" d="M410 128 C410 250 285 320 285 402"></path>
+          <path class="flow-path rq" d="M410 128 C410 250 470 320 470 402"></path>
+          <path class="flow-path rq" d="M410 128 C410 250 690 320 690 402"></path>
+          <path class="flow-path zu" d="M690 214 C690 300 285 330 285 402"></path>
+          <path class="flow-path zu" d="M690 214 C690 300 470 330 470 402"></path>
+          <path class="flow-path zu" d="M690 214 C690 300 690 330 690 402"></path>
+        </g>
+        <g id="flow-particles"></g>
+        <g>
+          <rect class="node-box rq" x="286" y="66" width="248" height="62" rx="10"></rect>
+          <text class="node-label" x="410" y="92" text-anchor="middle" font-size="15">REACT QUERY</text>
+          <text class="node-sub" x="410" y="110" text-anchor="middle" font-size="10.5">the data layer &middot; source of truth</text>
+        </g>
+        <g>
+          <rect class="node-box zu" x="586" y="158" width="212" height="56" rx="10"></rect>
+          <text class="node-label" x="692" y="182" text-anchor="middle" font-size="14">ZUSTAND</text>
+          <text class="node-sub" x="692" y="199" text-anchor="middle" font-size="10">searchTerm &middot; playingIndex</text>
+        </g>
+        <g>
+          <rect class="leaf-box" x="40" y="402" width="150" height="46" rx="9"></rect>
+          <text class="leaf-label" x="115" y="429" text-anchor="middle" font-size="11">Router</text>
+          <rect class="leaf-box" x="210" y="402" width="150" height="46" rx="9"></rect>
+          <text class="leaf-label" x="285" y="429" text-anchor="middle" font-size="11">Topbar</text>
+          <rect class="leaf-box" x="380" y="402" width="180" height="46" rx="9"></rect>
+          <text class="leaf-label" x="470" y="429" text-anchor="middle" font-size="11">LibraryView</text>
+          <rect class="leaf-box" x="600" y="402" width="180" height="46" rx="9"></rect>
+          <text class="leaf-label" x="690" y="429" text-anchor="middle" font-size="11">FileCard &times;N</text>
+        </g>
+      </svg>
+    </div>
+
+    <blockquote class="aside reveal">
+      At scale I'd reach for MobX &mdash; <code>computed</code> + fine-grained reactivity kill the derive-with-hooks trap. Zustand won here on <strong>1 KB and no magic</strong>: readable in 30 seconds, which is exactly what a reviewer needs.
+      <span class="who">&mdash; the state call, in one breath</span>
+    </blockquote>
+  </section>
+
+  <!-- VIRTUALIZATION -->
+  <section>
+    <div class="sec-head reveal">
+      <span class="eyebrow data">Virtualization</span>
+      <h2>Five thousand files. Eight rows.</h2>
+      <p class="body">Mounting a <code>&lt;video&gt;</code> for every file would choke the DOM. So only the rows inside the viewport actually exist &mdash; the rest is empty space the browser scrolls past. Scroll the strip: the list is enormous, the mounted count barely moves.</p>
+    </div>
+
+    <div class="panel reveal">
+      <div class="virt">
+        <div class="virt-strip" id="virtStrip" tabindex="0" aria-label="Scrollable list of 5,000 rows, virtualized">
+          <div class="virt-spacer" id="virtSpacer"></div>
+        </div>
+        <div class="virt-side">
+          <div class="bigstat mounted">
+            <b><span id="mountedCount">0</span> <span class="of num">/ 5,000</span></b>
+            <span>ROWS MOUNTED IN THE DOM</span>
+          </div>
+          <div class="bigstat">
+            <b class="num" id="scrollPct" style="font-size:clamp(22px,4vw,30px);color:var(--muted)">0%</b>
+            <span>SCROLLED &middot; <span id="firstIdx" class="num">0</span>&ndash;<span id="lastIdx" class="num">0</span> visible</span>
+          </div>
+          <p class="virt-note">Every row you don't see is one the browser never rendered. That's the whole trick &mdash; the DOM stays tiny no matter how big the list.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTING -->
+  <section>
+    <div class="sec-head reveal">
+      <span class="eyebrow accent">Testing</span>
+      <h2>Test the logic. Smoke-test the paint.</h2>
+      <p class="body">Confidence comes from deterministic logic and state tests &mdash; pass data in, assert the output, no mocked network. The one render test proves the wiring, nothing more: it can't even mount the grid without faking <code>ResizeObserver</code>, and a test that fakes the browser isn't testing the browser. Real UI confidence lives in E2E, in a real engine.</p>
+    </div>
+
+    <div class="panel reveal" id="ladderPanel">
+      <div class="panel-head">
+        <span class="panel-title">Where the tests earn their keep</span>
+        <span class="panel-title">ROI &rarr;</span>
+      </div>
+      <div class="ladder">
+        <div class="rung">
+          <div class="lab">Pure logic <small>CSV &middot; filter &middot; formatters</small></div>
+          <div class="track"><div class="fill hi" data-w="95"></div></div>
+          <div class="val">high</div>
+        </div>
+        <div class="rung">
+          <div class="lab">State + data <small>store actions &middot; useLibrary</small></div>
+          <div class="track"><div class="fill hi" data-w="84"></div></div>
+          <div class="val">high</div>
+        </div>
+        <div class="rung">
+          <div class="lab">Component render <small>jsdom &middot; stubs ResizeObserver</small></div>
+          <div class="track"><div class="fill lo" data-w="30"></div></div>
+          <div class="val">smoke</div>
+        </div>
+        <div class="rung">
+          <div class="lab">E2E &mdash; real engine <small>Playwright &middot; not built (yet)</small></div>
+          <div class="track"><div class="fill e2e" data-w="88"></div></div>
+          <div class="val">high</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GRAVEYARD -->
+  <section>
+    <div class="sec-head reveal">
+      <span class="eyebrow">Aside</span>
+      <h2>The throne was never filled.</h2>
+      <p class="body">React never crowned a state leader. Redux got dethroned by its own creator; Recoil shipped, got hyped, then quietly went dark; Zustand, Jotai and Valtio are &mdash; funnily enough &mdash; the same three people. Pick the one that fits the job, not the sermon. <span style="color:var(--faint)">(Hover the dots.)</span></p>
+    </div>
+
+    <div class="panel reveal">
+      <div class="tl"><div class="tl-axis" id="tlAxis"></div></div>
+      <div class="tl-years"><span>2015</span><span>2018</span><span>2021</span><span>2024</span></div>
+    </div>
+  </section>
+
+  <!-- DECISION CARDS -->
+  <section>
+    <div class="sec-head reveal">
+      <span class="eyebrow">The rest of the record</span>
+      <h2>Four smaller calls.</h2>
+    </div>
+
+    <div class="cards reveal">
+      <div class="card">
+        <span class="kicker">Styling</span>
+        <h3>Pure CSS, no Tailwind.</h3>
+        <p>Nesting and custom properties ship in the browser now. A utility framework just makes the HTML &mdash; and the selectors &mdash; uglier as the app grows.</p>
+      </div>
+
+      <div class="card">
+        <span class="kicker">Playback</span>
+        <h3>The <code>vault://</code> protocol.</h3>
+        <p>The renderer can't touch <code>file://</code>. So the main process serves a custom scheme &mdash; streaming the real file with HTTP Range support, so every cell plays a real, seekable video.</p>
+        <div class="miniflow">
+          <span class="chip">&lt;video&gt;</span><span class="arr">&rarr;</span>
+          <span class="chip">vault://</span><span class="arr">&rarr;</span>
+          <span class="chip">main</span><span class="arr">&rarr;</span>
+          <span class="chip">stream + Range</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="kicker">Fetching</span>
+        <h3>One query per cell.</h3>
+        <p>Not one big request. A single failed lookup shows a Retry on that card &mdash; the other 4,999 don't care. The mock fails ~10% of the time to prove it.</p>
+        <div class="dotgrid" id="dotgrid" aria-hidden="true"></div>
+      </div>
+
+      <div class="card">
+        <span class="kicker">Mock API</span>
+        <h3>Per-path, not batch.</h3>
+        <p>The brief says <code>array &rarr; list</code>. I went <code>getFileMetadata(path)</code> on purpose &mdash; it's the only shape that makes the per-cell loading / error / retry states above possible.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="row">
+      <span class="brand">File Vault &mdash; senior FE take-home</span>
+      <span class="brand" style="color:var(--red)">opinionated on purpose</span>
+    </div>
+    <p class="fine" style="margin-top:16px">Every chart here is hand-rolled SVG &amp; canvas &mdash; the Artifact sandbox blocks CDN scripts, so no D3 was loaded (or harmed) in the making of this page.</p>
+  </footer>
+
+</div>
+
+<script>
+  (function () {
+    "use strict";
+    var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    /* scroll reveals - reveal in-view immediately, observe the rest */
+    var revs = document.querySelectorAll(".reveal");
+    function inView(el) { var r = el.getBoundingClientRect(); return r.top < (window.innerHeight || 800) * 0.95 && r.bottom > 0; }
+    if ("IntersectionObserver" in window && !reduce) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } });
+      }, { threshold: 0.12 });
+      revs.forEach(function (r) { if (inView(r)) { r.classList.add("in"); } else { io.observe(r); } });
+    } else {
+      revs.forEach(function (r) { r.classList.add("in"); });
+    }
+
+    /* architecture particle flow */
+    (function () {
+      var paths = Array.prototype.slice.call(document.querySelectorAll(".flow-path"));
+      var host = document.getElementById("flow-particles");
+      if (!paths.length || !host) { return; }
+      var SVGNS = "http://www.w3.org/2000/svg";
+      var particles = [];
+      var lengths = paths.map(function (p) { return p.getTotalLength(); });
+      paths.forEach(function (p, pi) {
+        var isRq = p.classList.contains("rq");
+        var n = 5;
+        for (var i = 0; i < n; i++) {
+          var c = document.createElementNS(SVGNS, "circle");
+          c.setAttribute("r", isRq ? "2.6" : "2.3");
+          c.setAttribute("fill", isRq ? "#6fe0d4" : "#ff5a49");
+          host.appendChild(c);
+          particles.push({ el: c, pi: pi, t: i / n + Math.random() * 0.04, sp: (isRq ? 0.0016 : 0.0014) + Math.random() * 0.0008 });
+        }
+      });
+      function place(pt) {
+        var point = paths[pt.pi].getPointAtLength(pt.t * lengths[pt.pi]);
+        pt.el.setAttribute("cx", point.x.toFixed(1));
+        pt.el.setAttribute("cy", point.y.toFixed(1));
+        var edge = Math.min(pt.t, 1 - pt.t);
+        pt.el.setAttribute("opacity", Math.min(1, edge * 8).toFixed(2));
+      }
+      if (reduce) {
+        particles.forEach(function (pt) { pt.t = Math.random(); place(pt); });
+      } else {
+        (function frame() {
+          for (var i = 0; i < particles.length; i++) {
+            var pt = particles[i];
+            pt.t += pt.sp;
+            if (pt.t > 1) { pt.t -= 1; }
+            place(pt);
+          }
+          requestAnimationFrame(frame);
+        })();
+      }
+    })();
+
+    /* virtualization demo - a real mini windower */
+    (function () {
+      var TOTAL = 5000, ROW = 30, OVER = 3;
+      var strip = document.getElementById("virtStrip");
+      var spacer = document.getElementById("virtSpacer");
+      if (!strip || !spacer) { return; }
+      spacer.style.height = (TOTAL * ROW) + "px";
+      var pool = [];
+      var mountedEl = document.getElementById("mountedCount");
+      var firstEl = document.getElementById("firstIdx");
+      var lastEl = document.getElementById("lastIdx");
+      var pctEl = document.getElementById("scrollPct");
+      function render() {
+        var top = strip.scrollTop, h = strip.clientHeight;
+        var start = Math.max(0, Math.floor(top / ROW) - OVER);
+        var count = Math.ceil(h / ROW) + OVER * 2;
+        var end = Math.min(TOTAL, start + count);
+        var need = end - start;
+        while (pool.length < need) {
+          var row = document.createElement("div");
+          row.className = "vrow";
+          row.style.height = ROW + "px";
+          var idx = document.createElement("span"); idx.className = "idx";
+          var bar = document.createElement("span"); bar.className = "bar";
+          row.appendChild(idx); row.appendChild(bar);
+          spacer.appendChild(row);
+          pool.push({ row: row, idx: idx, bar: bar });
+        }
+        for (var i = 0; i < pool.length; i++) {
+          var slot = pool[i];
+          if (i < need) {
+            var n = start + i;
+            slot.row.style.display = "flex";
+            slot.row.style.transform = "translateY(" + (n * ROW) + "px)";
+            slot.idx.textContent = String(n).padStart(4, "0");
+            slot.bar.style.width = (30 + ((n * 37) % 68)) + "%";
+            slot.bar.style.opacity = (0.35 + ((n * 13) % 40) / 100).toFixed(2);
+          } else {
+            slot.row.style.display = "none";
+          }
+        }
+        if (mountedEl) { mountedEl.textContent = String(need); }
+        if (firstEl) { firstEl.textContent = String(start); }
+        if (lastEl) { lastEl.textContent = String(end); }
+        if (pctEl) { var max = TOTAL * ROW - h; pctEl.textContent = (max > 0 ? Math.round((top / max) * 100) : 0) + "%"; }
+      }
+      var ticking = false;
+      strip.addEventListener("scroll", function () {
+        if (!ticking) { ticking = true; requestAnimationFrame(function () { render(); ticking = false; }); }
+      }, { passive: true });
+      window.addEventListener("resize", render);
+      render();
+    })();
+
+    /* testing ladder fills */
+    (function () {
+      var panel = document.getElementById("ladderPanel");
+      var fills = document.querySelectorAll("#ladderPanel .fill");
+      if (!panel) { return; }
+      function fill() { fills.forEach(function (f) { f.style.width = (f.getAttribute("data-w") || 0) + "%"; }); }
+      if ("IntersectionObserver" in window && !reduce) {
+        var io2 = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) { fill(); io2.disconnect(); } }); }, { threshold: 0.3 });
+        io2.observe(panel);
+      } else { fill(); }
+    })();
+
+    /* state-management timeline */
+    (function () {
+      var axis = document.getElementById("tlAxis");
+      if (!axis) { return; }
+      function pos(y) { return ((y - 2015) / (2024 - 2015)) * 100; }
+      var libs = [
+        { name: "Redux", year: 2015.3, tone: "", up: true, tip: "Won the early war, then Dan wrote 'You Might Not Need Redux' at its peak." },
+        { name: "MobX", year: 2015.8, tone: "good", up: false, tip: "Fine-grained reactivity, computed values. Correct and off-message, so it lost the vibe." },
+        { name: "Recoil", year: 2020.4, tone: "dead", up: true, tip: "Meta shipped it, hyped it, then abandoned it. The async-selector story was a footgun farm." },
+        { name: "Zustand", year: 2021.2, tone: "live", up: false, tip: "1 KB, 'just a hook'. What we shipped, even with the useShallow selector tax." },
+        { name: "Jotai", year: 2022.0, tone: "", up: true, tip: "Recoil's atoms, actually maintained. Same crew as Zustand and Valtio (Poimandres)." }
+      ];
+      libs.forEach(function (l) {
+        var node = document.createElement("div");
+        node.className = "tl-node " + (l.up ? "up" : "down");
+        node.style.left = pos(l.year) + "%";
+        node.setAttribute("data-tone", l.tone);
+        node.setAttribute("tabindex", "0");
+        node.setAttribute("role", "img");
+        node.setAttribute("aria-label", l.name + ": " + l.tip);
+        var mark = l.tone === "dead" ? " &dagger;" : l.tone === "live" ? " &larr;" : "";
+        node.innerHTML =
+          '<div class="tl-name">' + l.name + mark + '</div>' +
+          '<div class="tl-dot"></div>' +
+          '<div class="tl-tip"><b>' + l.name + '</b> &middot; ' + Math.floor(l.year) + '<br>' + l.tip + '</div>';
+        axis.appendChild(node);
+      });
+    })();
+
+    /* per-cell dot grid (~10% failures) */
+    (function () {
+      var g = document.getElementById("dotgrid");
+      if (!g) { return; }
+      var html = "";
+      for (var i = 0; i < 60; i++) { html += '<i class="' + (((i * 7 + 3) % 10 === 0) ? "err" : "") + '"></i>'; }
+      g.innerHTML = html;
+    })();
+  })();
+</script>
