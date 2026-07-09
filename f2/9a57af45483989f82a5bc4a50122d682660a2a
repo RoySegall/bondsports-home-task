@@ -1,0 +1,26 @@
+src/lib/useImportCsv.ts
+  s_0b7ba546d32d1f::t_72865be41e25ea 8-9
+README.md
+  h_2e28e21a82d10a 22
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "f29a57af45483989f82a5bc4a50122d682660a2a",
+  "prompts": {},
+  "humans": {
+    "h_2e28e21a82d10a": {
+      "author": "Roy Segall <roy@segall.io>"
+    }
+  },
+  "sessions": {
+    "s_0b7ba546d32d1f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "964fe502-5d82-4c3c-a5fa-e1342eaf91a6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Roy Segall <roy@segall.io>"
+    }
+  }
+}
