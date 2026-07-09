@@ -1,11 +1,11 @@
-import {useAppStore} from "../States/useAppStore.ts";
 import {LibraryView} from "./LibraryView";
 import {EmptyState} from "./EmptyState";
+import {useHasLibrary} from "../lib/useLibrary";
 
 export default function Router() {
-    const view = useAppStore((state) => state.view);
+    const uploadedCsvFile = useHasLibrary();
 
-    if (view === 'grid') {
+    if (uploadedCsvFile) {
         return <LibraryView />;
     }
 

@@ -1,0 +1,10 @@
+/* One virtualized row — height/transform/columns set inline; a CSS grid lays out
+   the equal-width cells within it. */
+.row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: grid;
+  column-gap: var(--space-3);
+}

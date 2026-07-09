@@ -1,12 +1,13 @@
 import { Search } from 'lucide-react'
 import { useAppStore } from '../../States/useAppStore'
+import { useHasLibrary } from '../../lib/useLibrary'
 import styles from './Topbar.module.css'
 
 // Fixed frosted top bar: brand + live file-name search (disabled until files load).
 export function Topbar() {
   const searchTerm = useAppStore((state) => state.searchTerm)
   const setSearchTerm = useAppStore((state) => state.setSearchTerm)
-  const hasFiles = useAppStore((state) => state.view === 'grid')
+  const hasFiles = useHasLibrary()
 
   return (
     <header className={styles.topbar}>

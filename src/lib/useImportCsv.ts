@@ -1,13 +1,14 @@
-import { useMutation } from '@tanstack/react-query'
-import { useAppStore } from '../States/useAppStore'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { isVideoPath } from '../../shared/types'
 import { pickCsvFile } from './fileVaultApi'
 import { parseCsvPaths } from './csv'
+import { LIBRARY_KEY } from './useLibrary'
 
-// Import as a mutation: pick a CSV over IPC, then load the video paths into the
-// store. Exposes isPending/isError to the button for free.
+// Import as a mutation: pick a CSV over IPC, then drop the parsed video paths into
+// the React Query cache. RQ is the data layer — the list waterfalls from there into
+// the store (see useLibraryWaterfall). Exposes isPending/isError to the button.
 export function useImportCsv() {
-  const setFilePaths = useAppStore((state) => state.setFilePaths)
+  const queryClient = useQueryClient()
 
   return useMutation({
     mutationFn: pickCsvFile,
@@ -15,7 +16,7 @@ export function useImportCsv() {
       if (text === null) {
         return
       }
-      setFilePaths(parseCsvPaths(text).filter(isVideoPath))
+      queryClient.setQueryData(LIBRARY_KEY, parseCsvPaths(text).filter(isVideoPath))
     },
   })
 }
