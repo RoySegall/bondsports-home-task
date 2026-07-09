@@ -1,0 +1,65 @@
+src/lib/useLibrary.test.tsx
+  s_0b7ba546d32d1f::t_02283a0c5ee1b7 1-3,5,7-8,16-17,26-27,30,35-36
+  s_0b7ba546d32d1f::t_b1608abeb6e8cf 4,6,9-15,18-25,28-29,31-34
+src/views/LibraryView/LibraryView.tsx
+  s_0b7ba546d32d1f::t_98aef5fef710ce 6-7,16-17,49,59,61-66
+  s_0b7ba546d32d1f::t_009b71c8eabfe7 1,5
+  s_0b7ba546d32d1f::t_8043be1bded618 19-22
+  s_0b7ba546d32d1f::t_b5f1ab26eed717 4
+  s_0b7ba546d32d1f::t_a916e1ab030950 2,14-15,30-31,33-38,40-45,51,55-58,60,67-68
+  s_0b7ba546d32d1f::t_74f741c6fb2746 24-26
+src/views/LibraryView/LibraryHeader.tsx
+  s_0b7ba546d32d1f::t_f72718fa170a42 1-15
+src/components/Topbar/Topbar.tsx
+  s_0b7ba546d32d1f::t_1880bdcffe221a 3,10
+src/lib/useImportCsv.ts
+  s_0b7ba546d32d1f::t_d422c7465accd7 1,5,7-9,11,19
+src/States/useAppStore.ts
+  s_0b7ba546d32d1f::t_5e11cebe7417cd 3-4,8,21-23,25
+src/views/Router.test.tsx
+  s_0b7ba546d32d1f::t_ac0554a1e8a184 43,49-56
+  s_0b7ba546d32d1f::t_7c87739e1b495d 1-42,44-48,57-58
+src/lib/filterPaths.ts
+  s_0b7ba546d32d1f::t_ed5564401bd64e 1-11
+src/views/Router.tsx
+  h_2e28e21a82d10a 6,8
+  s_0b7ba546d32d1f::t_2a485f6d9cfcd1 3
+src/States/useAppStore.test.ts
+  s_0b7ba546d32d1f::t_6720327897c293 2,4-5,10-12,14-15,18-21,25-29
+src/lib/useContentWidth.ts
+  s_0b7ba546d32d1f::t_5d0f588017fd4c 1-32
+src/lib/filterPaths.test.ts
+  s_0b7ba546d32d1f::t_a61d6a8e88b7bf 1-28
+src/lib/useLibrary.ts
+  s_0b7ba546d32d1f::t_a6ea336ec2c715 31-33,35
+  s_0b7ba546d32d1f::t_86bf96ab5f5239 2-3,5-6,10-11,37
+  s_0b7ba546d32d1f::t_b64c06113893bb 1,4,7-9,12-30,34
+  h_2e28e21a82d10a 36
+src/views/LibraryView/LibraryHeader.module.css
+  s_0b7ba546d32d1f::t_ca2d00d6f25584 1-21
+src/views/LibraryView/LibraryRow.tsx
+  s_0b7ba546d32d1f::t_ea4ce62a56e082 1-34
+src/views/LibraryView/LibraryRow.module.css
+  s_0b7ba546d32d1f::t_69fada87c565b1 1-10
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.10",
+  "base_commit_sha": "7e7eda27aca845bfd7604f4903477e7784b9e661",
+  "prompts": {},
+  "humans": {
+    "h_2e28e21a82d10a": {
+      "author": "Roy Segall <roy@segall.io>"
+    }
+  },
+  "sessions": {
+    "s_0b7ba546d32d1f": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "964fe502-5d82-4c3c-a5fa-e1342eaf91a6",
+        "model": "claude-opus-4-8"
+      },
+      "human_author": "Roy Segall <roy@segall.io>"
+    }
+  }
+}
